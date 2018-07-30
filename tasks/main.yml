@@ -4,21 +4,26 @@
       - python-httplib2
 
 - name: get statsd
-  unarchive: src=https://github.com/bitly/statsdaemon/releases/download/v0.7.1/statsdaemon-0.7.1.linux-amd64.go1.5.1.tar.gz
-             dest=/usr/local/bin copy=no creates=/usr/local/bin/statsdaemon list_files=yes
+  git: repo=https://github.com/bitly/statsdaemon.git dest=/root/statsdaemon
+
+- name: install golang
+  apt: name=golang-go
+
+- name: get github.com/stretchr/testify/assert
+  shell: GOPATH=/root/gopath go get github.com/stretchr/testify/assert
+
+- name: compile statsd
+  shell: cd /root/statsdaemon && GOPATH=/root/gopath ./dist.sh creates=/root/statsdaemon/dist/statsdaemon-0.7.1.linux-amd64.go1.6.2.tar.gz
+
+- name: get statsd
+  unarchive: src=/root/statsdaemon/dist/statsdaemon-0.7.1.linux-amd64.go1.6.2.tar.gz
+            dest=/root copy=no creates=/root/statsdaemon-0.7.1.linux-amd64.go1.6.2 list_files=yes
   ignore_errors: true
   register: result
 
-- name: if direct download with unarchive failed fall back
-  include_tasks: fallback.yml
-  when: result|failed
-
-- name: move statsdaemon-0.7.1.linux-amd64.go1.5.1/statsdaemon to /usr/local/bin
-  shell: mv -v /usr/local/bin/statsdaemon-0.7.1.linux-amd64.go1.5.1/statsdaemon /usr/local/bin/statsdaemon
+- name: move /root/statsdaemon-0.7.1.linux-amd64.go1.6.2/statsdaemon to /usr/local/bin
+  shell: mv -v /root/statsdaemon-0.7.1.linux-amd64.go1.6.2/statsdaemon /usr/local/bin/statsdaemon
   when: result.changed
-
-- name: remove /usr/local/bin/statsdaemon-0.7.1.linux-amd64.go1.5.1
-  file: dest=/usr/local/bin/statsdaemon-0.7.1.linux-amd64.go1.5.1 state=absent
 
 - name: create statsd user
   user: name=statsd

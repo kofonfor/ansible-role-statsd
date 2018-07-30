@@ -8,7 +8,7 @@ User=statsd
 Group=statsd
 Restart=always
 RestartSec=20
-ExecStart=/usr/local/bin/statsdaemon -address=":{{ statsd_port }}" -graphite="{{ graphite_host }}:{{ graphite_port }}"
+ExecStart=/usr/local/bin/statsdaemon -address=":{{ statsd_port }}" -graphite="{{ graphite_host }}:{{ graphite_port }}" -delete-gauges=true -flush-interval=15 -percent-threshold=50 -percent-threshold=75 -percent-threshold=90 -percent-threshold=99
 
 [Install]
 WantedBy=multi-user.target
